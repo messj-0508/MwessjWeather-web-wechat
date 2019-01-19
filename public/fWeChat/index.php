@@ -20,20 +20,7 @@
         //1.获取到微信推送过来post数据（xml格式）
         $postArr = $GLOBALS['HTTP_RAW_POST_DATA'];
         //2.处理消息类型，并设置回复类型和内容
-        /*<xml>
-<ToUserName><![CDATA[toUser]]></ToUserName>
-<FromUserName><![CDATA[FromUser]]></FromUserName>
-<CreateTime>123456789</CreateTime>
-<MsgType><![CDATA[event]]></MsgType>
-<Event><![CDATA[subscribe]]></Event>
-</xml>*/
         $postObj = simplexml_load_string( $postArr );
-        //$postObj->ToUserName = '';
-        //$postObj->FromUserName = '';
-        //$postObj->CreateTime = '';
-        //$postObj->MsgType = '';
-        //$postObj->Event = '';
-        // gh_e79a177814ed
         //判断该数据包是否是订阅的事件推送
         if( strtolower( $postObj->MsgType) == 'event'){
             //如果是关注 subscribe 事件
@@ -53,32 +40,40 @@
                                 </xml>";
                 $info     = sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
                 echo $info;
-                /*<xml>
-                <ToUserName><![CDATA[toUser]]></ToUserName>
-                <FromUserName><![CDATA[fromUser]]></FromUserName>
-                <CreateTime>12345678</CreateTime>
-                <MsgType><![CDATA[text]]></MsgType>
-                <Content><![CDATA[你好]]></Content>
-                </xml>*/
-
 
             }
         }
-        if( strtolower( $postObj->MsgType) == 'text'){
+        else if( strtolower( $postObj->MsgType) == 'text'){
             $content = $postObj->Content;
-                $toUser   = $postObj->FromUserName;
-                $fromUser = $postObj->ToUserName;
-                $time     = time();
-                $msgType  =  'text';
-                $content  = "【".$content."预报】\n2018年11月24日 21时发布\n\n实时天气\n晴 -10至10℃ 南风4级\n\n温馨提示：天气寒冷，多穿衣服\n\n明天\n晴 -10至10℃ 南风4级\n\n后天\n晴 -10至10℃ 南风4级\n\n";
-                $template = "<xml>
-                                <ToUserName><![CDATA[%s]]></ToUserName>
-                                <FromUserName><![CDATA[%s]]></FromUserName>
-                                <CreateTime>%s</CreateTime>
-                                <MsgType><![CDATA[%s]]></MsgType>
-                                <Content><![CDATA[%s]]></Content>
-                                </xml>";
+            $toUser   = $postObj->FromUserName;
+            $fromUser = $postObj->ToUserName;
+            $time     = time();
+            $msgType  =  'text';
+            $template = "<xml>
+                                  <ToUserName><![CDATA[%s]]></ToUserName>
+                                  <FromUserName><![CDATA[%s]]></FromUserName>
+                                  <CreateTime>%s</CreateTime>
+                                  <MsgType><![CDATA[%s]]></MsgType>
+                                  <Content><![CDATA[%s]]></Content>
+                                  </xml>";
+            $str = mb_substr($content,-2,2,"UTF-8");
+            $str_key = mb_substr($content,0,-2,"UTF-8");
+            if($str == '天气' && !empty($str_key))
+            {
+                //调用函数查询天气数据
+                $url = "http://www.messj.xyz/api/city/read/county_name/".$str_key;
+                $data = json_decode(file_get_contents($url));
+                if($data->code == 200){
+                  $content  = "【".$data->city."天气预报】\n".$data->weather_info;
+                }else{
+                  $content  = "啊，该城市没有查找到，呜呜呜呜";
+                }
                 $info     = sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
                 echo $info;
+            }else{
+                $content  = "您好，请问有什么可以为您服务的吗？\n如果想要查看天气，请回复“所在城市+天气”，如“北京天气”";
+                $info     = sprintf($template, $toUser, $fromUser, $time, $msgType, $content);
+                echo $info;
+            }
         }
     }

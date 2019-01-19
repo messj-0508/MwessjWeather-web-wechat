@@ -15,11 +15,11 @@ return [
     // 服务器地址
     'hostname'        => '127.0.0.1',
     // 数据库名
-    'database'        => 'sql139_199_98_3',
+    'database'        => 'www_messj_xyz',
     // 用户名
-    'username'        => 'sql139_199_98_3',
+    'username'        => 'www_messj_xyz',
     // 密码
-    'password'        => 'kzQymRRd74',
+    'password'        => 'dARbmPsQWJ',
     // 端口
     'hostport'        => '3306',
     // 连接dsn
@@ -40,6 +40,8 @@ return [
     'master_num'      => 1,
     // 指定从服务器序号
     'slave_no'        => '',
+    // 自动读取主库数据
+    'read_master'     => false,
     // 是否严格检查字段是否存在
     'fields_strict'   => true,
     // 数据集返回类型

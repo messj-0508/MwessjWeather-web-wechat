@@ -2,6 +2,7 @@
 namespace app\index\controller;
 
 use think\Controller;
+use think\Validate;
 
 class Register extends Controller
 {
@@ -16,15 +17,29 @@ class Register extends Controller
     public function register()
     {    	
     	$param = input('post.');
-    	if(empty($param['user_name'])){
-    		
-    		$this->error('用户名不能为空');
-    	}
-    	
-    	if(empty($param['user_pwd'])){
-    		
-    		$this->error('密码不能为空');
-    	}
+      	 $rule = [
+            'user'  =>  'require',
+            'password'  =>  'require|min:6|confirm',
+         ];
+         $msg = [
+            'user.require' => '用户名不能为空',
+            'password.require' => '密码不能为空',
+            'password.min' => '密码必须6位以上',
+            'password.confirm' => '两次密码不一致',
+        ];
+      
+        $testdata = [
+            'user' => $param['user_name'],
+			'password' => $param['user_pwd'],
+			'password_confirm' => $param['confirm'],
+        ];
+
+		$validate = new Validate($rule,$msg);
+            
+        if(!$validate->check($testdata)){
+            return $this->error($validate->getError());
+        }
+
     	$data = [		//接受传递的参数
 				'user_name' => $param['user_name'],
 				'user_pwd' => md5($param['user_pwd']),
